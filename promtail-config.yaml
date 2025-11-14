@@ -1,0 +1,32 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /var/log/positions/positions.yaml
+
+clients:
+  # This tells Promtail where to send the logs (to the Loki service)
+  - url: http://loki:3100/loki/api/v1/push
+
+# Global scrape configuration to find and process log streams
+scrape_configs:
+# Scrape logs from all running Docker containers
+- job_name: docker
+  docker_sd_configs:
+    - host: unix:///var/run/docker.sock
+      refresh_interval: 5s
+  relabel_configs:
+    # Set the label for the log source (all logs collected will have this label)
+    - source_labels: ['__meta_docker_container_name']
+      regex: '/(.*)'
+      target_label: container_name
+    # Keep only the essential labels to minimize index size
+    - source_labels: ['__meta_docker_container_name']
+      regex: '(.+)'
+      target_label: job
+      replacement: 'containerlogs'
+    - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+      target_label: service
+    - source_labels: ['__meta_docker_container_id']
+      target_label: instance
