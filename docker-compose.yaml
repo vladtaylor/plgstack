@@ -1,0 +1,97 @@
+version: "3.8"
+
+# Defines the entire stack for log collection, storage, and visualization
+services:
+
+  # 1. Loki: The log aggregation system (the core database/storage)
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      # Port 3100 is used for Promtail to send logs and Grafana to query logs
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      # Volume for persistent storage of Loki's index and chunk data
+      - loki-data:/loki
+      # Mount the custom configuration file
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+    depends_on:
+      - promtail
+
+  # 2. Promtail: The log collection agent
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    volumes:
+      # Mount Promtail configuration
+      - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      # Crucial: Access the host's Docker socket to read container logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Crucial: Access the host's log files to read container metadata and logs
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # Volume for the Promtail positions file (to track where it left off in logs)
+      - promtail-positions:/var/log/positions
+
+  # 3. Prometheus: The Metrics collection system (The "Periphery" component)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090" # Web UI for Prometheus
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro # Configuration file
+      - prometheus-data:/prometheus # Persistent data storage
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  # 4. Alertmanager: Dedicated alerting component (handles grouping and routing of alerts)
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093" # Web UI for Alertmanager
+    volumes:
+      - ./alertmanager.yaml:/etc/alertmanager/config.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+
+  # 5. Grafana: The Web UI, Visualization, and Alerting engine
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      # Optional: Set default admin user/password (highly recommended to change these!)
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=strongpassword
+      # Configure Alertmanager URL for unified alerting in Grafana
+      - GF_ALERTING_ALERTMANAGER_URL=http://alertmanager:9093
+    ports:
+      # Port 3000 is for the web interface
+      - "3000:3000"
+    volumes:
+      # Volume for persistent storage of Grafana configuration and dashboards
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - loki
+      - prometheus
+      - alertmanager
+
+# Define named volumes for persistent data storage
+volumes:
+  loki-data:
+  grafana-data:
+  promtail-positions:
+  prometheus-data:
+  alertmanager-data:
