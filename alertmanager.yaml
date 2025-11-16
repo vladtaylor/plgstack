@@ -11,4 +11,3 @@ receivers:
         retry: 1m
         expire: 1h
 
-
