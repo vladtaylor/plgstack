@@ -49,7 +49,7 @@ services:
       - GF_ALERTING_ALERTMANAGER_URL=http://alertmanager:9093
     ports:
       # Port 3000 is for the web interface
-      - "3000:3000"
+      - "3030:3000"
     volumes:
       # Volume for persistent storage of Grafana configuration and dashboards
       - grafana-data:/var/lib/grafana
