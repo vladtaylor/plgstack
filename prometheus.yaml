@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  # Scrape Loki for metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+
+  # Scrape Docker containers via Promtail's metrics (optional)
+  # Uncomment if you expose Promtail metrics and want to scrape them
+  # - job_name: 'promtail'
+  #   static_configs:
+  #     - targets: ['promtail:9080']
+
+
