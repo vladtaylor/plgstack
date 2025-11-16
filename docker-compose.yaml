@@ -59,7 +59,7 @@ services:
       - ./alertmanager.yaml:/etc/alertmanager/config.yml:ro
     command:
       - '--config.file=/etc/alertmanager/config.yml'
-      - '--config.expand-env=true'
+      - '--storage.path=/alertmanager'
 
   # 5. Grafana: The Web UI, Visualization, and Alerting engine
   grafana:
@@ -91,3 +91,5 @@ volumes:
   loki-data:
   grafana-data:
   promtail-positions:
+  prometheus-data:
+  alertmanager-data:
