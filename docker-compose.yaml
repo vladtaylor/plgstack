@@ -43,10 +43,13 @@ services:
     restart: unless-stopped
     environment:
       # Optional: Set default admin user/password (highly recommended to change these!)
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=strongpassword
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-strongpassword}
       # Configure Alertmanager URL for unified alerting in Grafana
       - GF_ALERTING_ALERTMANAGER_URL=http://alertmanager:9093
+      # Pushover credentials (provided via .env)
+      - PUSHOVER_API_TOKEN=${PUSHOVER_API_TOKEN}
+      - PUSHOVER_USER_KEY=${PUSHOVER_USER_KEY}
     ports:
       # Port 3000 is for the web interface
       - "3030:3000"
