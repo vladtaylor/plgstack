@@ -1,13 +1,8 @@
 route:
-  receiver: 'pushover'
+  receiver: pushover
 
 receivers:
-  - name: 'pushover'
+  - name: pushover
     pushover_configs:
-      - url: 'https://api.pushover.net/1/messages.json'
-        token: '$PUSHOVER_API_TOKEN'
-        user: '$PUSHOVER_USER_KEY'
-        priority: 0
-        retry: 1m
-        expire: 1h
-
+      - token: '$PUSHOVER_API_TOKEN'
+        user_key: '$PUSHOVER_USER_KEY' 
