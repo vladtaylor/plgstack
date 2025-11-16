@@ -28,8 +28,6 @@ schema_config:
         period: 24h
 
 ruler:
-  # Updated to point to the new Alertmanager service name
-  alertmanager_url: http://alertmanager:9093 
   ring:
     instance_addr: 127.0.0.1
     kvstore:
@@ -38,8 +36,3 @@ ruler:
     type: local
     local:
       directory: /loki/rules
-
-# Simple retention policy to clean up logs after a period (30 days here)
-compactor:
-  retention_enabled: true
-  retention_period: 30d
